@@ -3,9 +3,9 @@ package com.machntek.reactive.live2;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-public class DelegateSub<T> implements Subscriber<T> {
+public class DelegateSub<T,R> implements Subscriber<T> {
     Subscriber sub;
-    public DelegateSub(Subscriber<? super T> sub) {
+    public DelegateSub(Subscriber<? super R> sub) {
         this.sub = sub;
     }
 

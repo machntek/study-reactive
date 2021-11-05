@@ -5,6 +5,7 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -27,7 +28,9 @@ import java.util.stream.Stream;
 public class PubSub {
     public static void main(String[] args) {
         Publisher<Integer> pub = iterPub(Stream.iterate(1, a -> a + 1).limit(10).collect(Collectors.toList()));
-        Publisher<Integer> mapPub = mapPub(pub, s -> s * 10);
+        Publisher<List> mapPub = mapPub(pub, s -> Collections.singletonList(s));
+//        Publisher<String> mapPub = mapPub(pub, s -> "[" + s + "]");
+//        Publisher<Integer> mapPub = mapPub(pub, s -> s * 10);
 //        Publisher<Integer> sumPub = sumPub(pub);
 //        Publisher<Integer> reducePub = reducePub(pub, 0, (a, b) -> a+b);
 
@@ -38,7 +41,7 @@ public class PubSub {
         return new Publisher<Integer>() {
             @Override
             public void subscribe(Subscriber<? super Integer> sub) {
-                pub.subscribe(new DelegateSub<Integer> (sub) {
+                pub.subscribe(new DelegateSub<Integer, Integer> (sub) {
                     int result = init;
                     @Override
                     public void onNext(Integer i) {
@@ -77,11 +80,12 @@ public class PubSub {
 //        };
 //    }
 
-    private static <T> Publisher<T> mapPub(Publisher<T> pub, Function<T, T> f) {
-        return new Publisher<T>() {
+    // T -> R
+    private static <T, R> Publisher<R> mapPub(Publisher<T> pub, Function<T, R> f) {
+        return new Publisher<R>() {
             @Override
-            public void subscribe(Subscriber<? super T> sub) {
-                pub.subscribe(new DelegateSub<T> (sub) {
+            public void subscribe(Subscriber<? super R> sub) {
+                pub.subscribe(new DelegateSub<T, R> (sub) {
                     @Override
                     public void onNext(T i) {
                         sub.onNext(f.apply(i));
