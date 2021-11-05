@@ -6,6 +6,11 @@ import java.util.concurrent.Executors;
 
 @SuppressWarnings("deprecation")
 public class Ob {
+
+    // 옵저버 패턴에 없는것
+    // 1. Complete????
+    // 2. Error???
+
     // Iterable <---> Observable (duality) 쌍대성
     // Pull           Push
 
