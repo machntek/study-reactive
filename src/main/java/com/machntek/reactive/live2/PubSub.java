@@ -28,23 +28,23 @@ import java.util.stream.Stream;
 public class PubSub {
     public static void main(String[] args) {
         Publisher<Integer> pub = iterPub(Stream.iterate(1, a -> a + 1).limit(10).collect(Collectors.toList()));
-        Publisher<List> mapPub = mapPub(pub, s -> Collections.singletonList(s));
+//        Publisher<List> mapPub = mapPub(pub, s -> Collections.singletonList(s));
 //        Publisher<String> mapPub = mapPub(pub, s -> "[" + s + "]");
 //        Publisher<Integer> mapPub = mapPub(pub, s -> s * 10);
 //        Publisher<Integer> sumPub = sumPub(pub);
-//        Publisher<Integer> reducePub = reducePub(pub, 0, (a, b) -> a+b);
+        Publisher<String> reducePub = reducePub(pub, "", (a, b) -> a + "-" + b);
 
-        mapPub.subscribe(logSub());
+        reducePub.subscribe(logSub());
     }
 
-    private static Publisher<Integer> reducePub(Publisher<Integer> pub, int init, BiFunction<Integer, Integer, Integer> bf) {
-        return new Publisher<Integer>() {
+    private static <T, R> Publisher<R> reducePub(Publisher<T> pub, R init, BiFunction<R, T, R> bf) {
+        return new Publisher<R>() {
             @Override
-            public void subscribe(Subscriber<? super Integer> sub) {
-                pub.subscribe(new DelegateSub<Integer, Integer> (sub) {
-                    int result = init;
+            public void subscribe(Subscriber<? super R> sub) {
+                pub.subscribe(new DelegateSub<T, R> (sub) {
+                    R result = init;
                     @Override
-                    public void onNext(Integer i) {
+                    public void onNext(T i) {
                         result = bf.apply(result, i);
                     }
 
