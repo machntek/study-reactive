@@ -36,25 +36,10 @@ public class PubSub {
         return new Publisher<Integer>() {
             @Override
             public void subscribe(Subscriber<? super Integer> sub) {
-                pub.subscribe(new Subscriber<Integer>() {
-                    @Override
-                    public void onSubscribe(Subscription s) {
-                        sub.onSubscribe(s);
-                    }
-
+                pub.subscribe(new DelegateSub(sub) {
                     @Override
                     public void onNext(Integer i) {
                         sub.onNext(f.apply(i));
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        sub.onError(t);
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        sub.onComplete();
                     }
                 });
             }
