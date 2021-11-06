@@ -41,16 +41,38 @@ public class SchedulerEx {
 
         };
 
-//        Publisher<Integer> subOnPub = sub -> {
-//            ExecutorService es = Executors.newSingleThreadExecutor(new CustomizableThreadFactory() {
-//                @Override
-//                public String getThreadNamePrefix() { return "subOn-"; }
-//            });
-//            es.execute(() -> pub.subscribe(sub));
-//        };
+        Publisher<Integer> subOnPub = sub -> {
+            ExecutorService es = Executors.newSingleThreadExecutor(new CustomizableThreadFactory() {
+                @Override
+                public String getThreadNamePrefix() { return "subOn-"; }
+            });
+            es.execute(() -> pub.subscribe(new Subscriber<Integer>() {
+                @Override
+                public void onSubscribe(Subscription s) {
+                    sub.onSubscribe(s);
+                }
+
+                @Override
+                public void onNext(Integer integer) {
+                    sub.onNext(integer);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    sub.onError(t);
+                    es.shutdown();
+                }
+
+                @Override
+                public void onComplete() {
+                    sub.onComplete();
+                    es.shutdown();
+                }
+            }));
+        };
 
         Publisher<Integer> pubOnPub = sub -> {
-            pub.subscribe(new Subscriber<Integer>() {
+            subOnPub.subscribe(new Subscriber<Integer>() {
                 ExecutorService es = Executors.newSingleThreadExecutor(new CustomizableThreadFactory() {
                     @Override
                     public String getThreadNamePrefix() { return "pubOn-"; }
