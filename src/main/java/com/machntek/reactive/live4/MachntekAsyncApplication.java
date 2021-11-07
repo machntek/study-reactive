@@ -39,12 +39,19 @@ public class MachntekAsyncApplication {
         @GetMapping("/callable")
         public Callable<String> callable() throws InterruptedException {
             log.info("callable");
+            // 작업 쓰레드에서 수행
             return () -> {
                 log.info("async");
                 TimeUnit.SECONDS.sleep(2);
                 return "hello";
             };
         }
+//        @GetMapping("/callable")
+//        public String async() throws InterruptedException {
+//            log.info("async");
+//            TimeUnit.SECONDS.sleep(2);
+//            return "hello";
+//        }
     }
 
     public static void main(String[] args) {
