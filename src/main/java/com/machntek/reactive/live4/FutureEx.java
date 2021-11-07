@@ -2,10 +2,7 @@ package com.machntek.reactive.live4;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @Slf4j
 public class FutureEx {
@@ -14,11 +11,13 @@ public class FutureEx {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         ExecutorService es = Executors.newCachedThreadPool();
 
-        Future<String> f = es.submit(() -> {
+        FutureTask<String> f = new FutureTask<>(() -> {
             Thread.sleep(2000);
             log.info("Async");
             return "Hello";
         });
+
+        es.execute(f);
 
         System.out.println(f.isDone());
         Thread.sleep(2100);
