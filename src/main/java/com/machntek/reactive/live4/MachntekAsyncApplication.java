@@ -15,8 +15,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -36,22 +39,29 @@ public class MachntekAsyncApplication {
 
     @RestController
     public static class MyController {
-        @GetMapping("/callable")
-        public Callable<String> callable() throws InterruptedException {
+        Queue<DeferredResult<String>> results = new ConcurrentLinkedQueue<>();
+
+        @GetMapping("/dr")
+        public DeferredResult<String> callable() throws InterruptedException {
             log.info("callable");
             // 작업 쓰레드에서 수행
-            return () -> {
-                log.info("async");
-                TimeUnit.SECONDS.sleep(2);
-                return "hello";
-            };
+            DeferredResult<String> dr = new DeferredResult<>(60000L);
+            results.add(dr);
+            return dr;
         }
-//        @GetMapping("/callable")
-//        public String async() throws InterruptedException {
-//            log.info("async");
-//            TimeUnit.SECONDS.sleep(2);
-//            return "hello";
-//        }
+
+        @GetMapping("/dr/count")
+        public String drcount() {
+            return String.valueOf(results.size());
+        }
+        @GetMapping("/dr/event")
+        public String drevent(String msg) {
+            for (DeferredResult<String> dr: results) {
+                dr.setResult("Hello " + msg);
+                results.remove(dr);
+            }
+            return "OK";
+        }
     }
 
     public static void main(String[] args) {
