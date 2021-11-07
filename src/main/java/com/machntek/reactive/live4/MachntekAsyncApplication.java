@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -33,6 +34,17 @@ public class MachntekAsyncApplication {
             Thread.sleep(2000);
             return new AsyncResult<>("Hello");
         }
+    }
+
+    @Bean
+    ThreadPoolTaskExecutor tp() {
+        ThreadPoolTaskExecutor te = new ThreadPoolTaskExecutor();
+        te.setCorePoolSize(10);
+        te.setMaxPoolSize(100);
+        te.setQueueCapacity(50);
+        te.setThreadNamePrefix("mythread");
+        te.initialize();
+        return te;
     }
 
     public static void main(String[] args) {
