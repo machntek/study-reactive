@@ -27,6 +27,7 @@ public class FluxScEx {
         // 서버에 수많은 main쓰레드가 돌아가고 있을텐데, 그 위에서 얘를 데몬쓰레드로 만드는게 편할거라는 판단.(추측)
 
         Flux.interval(Duration.ofMillis(200))
+                .take(10)
                 .subscribe(s -> log.debug("onNext:{}", s));
 
         log.debug("exit");
