@@ -48,3 +48,9 @@ NIO와 같이 비동기인 경우에는 커넥션은 동시에 계속 물고 있
 OS만 잘 튜닝하면 JAVA로 100만커넥션도 가능.
 
 그걸로 데이터를 쓰고 복잡한 CPU작업을 하는건 다른얘기지만, 커넥션의 경우 몇만 커넥션을 물고있는거는 간단.
+
+## 스프링MVC 비동기 수행방식
+1. Callable
+2. DeferredResult
+3. ResponseBodyEmitter
+
