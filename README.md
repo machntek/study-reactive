@@ -54,3 +54,14 @@ OS만 잘 튜닝하면 JAVA로 100만커넥션도 가능.
 2. DeferredResult
 3. ResponseBodyEmitter
 
+# 5강
+백단에 별개의 서비스를 호출하는게 많이 있는 경우, 단순히 비동기 서블릿을 사용하는것만으로 문제를 해결하기 어려운경우가 많이 있음.
+
+쓰레드 생성하면 CPU와 메모리 모두 씀
+쓰레드개수가 코어개수를 넘어서면 Context-switching 많이 발생.(CPU 자원 많이 먹음)
+
+외부API 호출은 쓰레드가 블록킹돼고, Context-switching 두번 발생.
+
+### Callable과 Runnable 차이
+Callable은 리턴값이 있고 Runnable은 없다
+Callable은 Exception 던지도록 선언돼있고 Runnable은 없다.
