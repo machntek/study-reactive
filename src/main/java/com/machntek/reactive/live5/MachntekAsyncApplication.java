@@ -26,6 +26,8 @@ public class MachntekAsyncApplication {
 
     @RestController
     public static class MyController {
+        public static final String URL1 = "http://localhost:8081/service?req={req}";
+        public static final String URL2 = "http://localhost:8081/service2?req={req}";
         @Autowired
         MyService myService;
         // Netty가 기본적으로 call할때 쓰레드 만드는 갯수 : 프로세스 갯수 * 2개
@@ -34,10 +36,9 @@ public class MachntekAsyncApplication {
         @GetMapping("/rest")
         public DeferredResult<String> rest(int idx) {
             DeferredResult<String> dr = new DeferredResult<>();
-            ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity("http://localhost:8081/service?req={req}", String.class, "hello" + idx);
+            ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity(URL1, String.class, "hello" + idx);
             f1.addCallback(s -> {
-
-                ListenableFuture<ResponseEntity<String>> f2 = rt.getForEntity("http://localhost:8081/service2?req={req}", String.class, "hello" + s.getBody());
+                ListenableFuture<ResponseEntity<String>> f2 = rt.getForEntity(URL2, String.class, "hello" + s.getBody());
                 f2.addCallback(s2 -> {
                     ListenableFuture<String> f3 = myService.work(s2.getBody());
                     f3.addCallback(s3 -> {
