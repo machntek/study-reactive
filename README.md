@@ -68,3 +68,6 @@ Callable은 Exception 던지도록 선언돼있고 Runnable은 없다.
 
 ### 이슈
 AsyncRestTemplate이 NIO로 동작 안하는듯하다.
+
+가벼운 오브젝트가 많이 만들어지는건 서버에 전혀 부담이 아님.
+Non-Blokcing IO를 쓴다는건 외부 리소스를 대기하고 있는거지, 리소스를 많이 잡고있는것이 아님.
