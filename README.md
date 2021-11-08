@@ -65,3 +65,6 @@ OS만 잘 튜닝하면 JAVA로 100만커넥션도 가능.
 ### Callable과 Runnable 차이
 Callable은 리턴값이 있고 Runnable은 없다
 Callable은 Exception 던지도록 선언돼있고 Runnable은 없다.
+
+### 이슈
+AsyncRestTemplate이 NIO로 동작 안하는듯하다.
