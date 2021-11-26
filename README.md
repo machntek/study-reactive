@@ -35,11 +35,14 @@ ThreadPoolTaskExecutor는 런타임중에 코어pool사이즈를 JMX를 통해 �
 쓰레드를 많이 만들면 context switching이 엄청 많이 발생하면서 cpu에 부하가 점점 커짐 -> 레이턴시 안좋아지고 처리율 떨어짐
 
 ### http요청을 처리하는 서블릿 스레드 동작방식
+```
 1           ST1 - req -> WorkThread -> res(html)
 2           ST2 - req -> blocking IO(DB, API) -> res(html)
 3   NIO     ST3
 4           ST4
 5           ST5
+```
+
 
 ### 비동기 서블릿 - 비동기 작업 수행
 서블릿쓰레드는 하나로 사용/반납을 통해서 돌려쓰지만(서블릿 쓰레드 풀보다 더 많은 요청이 들어와도 처리할 수 있도록, 요청이 서블릿스레드에 머무는 기간을 짧게 함),
@@ -58,11 +61,11 @@ ThreadPoolTaskExecutor는 런타임중에 코어pool사이즈를 JMX를 통해 �
 ![비동기서블릿 - DeferredResult](https://user-images.githubusercontent.com/19985682/143540852-ba19f61b-7108-4877-ae31-4126e2f5684e.jpeg)
 
 ### 예시
-
+```
 INFO 3851 --- [nio-8080-exec-1] c.m.r.live4.MachntekAsyncApplication     : callable  // 서블릿스레드는 비동기작업을 리턴하고 바로 반납
 
 INFO 3851 --- [         task-1] c.m.r.live4.MachntekAsyncApplication     : async // 비동기작업을 수행하는 워커스레드. 작업이 끝나면 서블릿 스레드를 할당받아서 빠르게 응답하고 다시 반납.
-
+```
 -> 서블릿 스레드의 가용성이 높아짐(thorughput 향상)
 
 ### NIO의 커넥션
