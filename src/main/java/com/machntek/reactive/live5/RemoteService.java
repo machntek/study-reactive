@@ -25,7 +25,7 @@ public class RemoteService {
 
     public static void main(String[] args) {
         System.setProperty("SERVER.PORT", "8081");  // 내장 톰캣이 이 포트값을 오버라이딩해서 씀
-        System.setProperty("server.tomcat.max-threads", "1000");
+        System.setProperty("server.tomcat.threads.max", "1000");
         SpringApplication.run(RemoteService.class);
     }
 }
