@@ -115,3 +115,8 @@ Non-Blokcing IO를 쓴다는건 외부 리소스를 대기하고 있는거지, �
 ### DB에서의 NIO
 DB(JDBC)는 블록킹이 걸린다고 생각을 하고, 쓰레드를 그만큼 할당하거나 자원(CPU 등 리소스)를 그만큼 손해볼거라고 가정하고 소스 짜야함(2017년 기준)
 오라클에서 비동기JDBC 스펙을 만들기 시작(2017)
+
+# 6강
+DeferredResult.setErrorResult()에 Exception을 던지면 client한테도 실패처리가 됨(500에러가 던져짐).
+
+DeferredResult.setErrorResult()에 메세지(ex. e.toString())를 넘기면, api호출에 대한 정상적인 결과로 client에게 String이 넘어감(에러긴 하지만 에러메세지가 응답으로 나감)

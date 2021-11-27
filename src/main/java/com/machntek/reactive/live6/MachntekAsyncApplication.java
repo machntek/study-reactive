@@ -42,7 +42,7 @@ public class MachntekAsyncApplication {
             Completion
                     .from(rt.getForEntity(URL1, String.class, "h" + idx))
                     .andApply(s -> rt.getForEntity(URL2, String.class, s.getBody()))
-                    .andError(e -> dr.setErrorResult(e))
+                    .andError(e -> dr.setErrorResult(e.toString()))
                     .andAccept(s -> dr.setResult(s.getBody()));
 
 //            ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity(URL1, String.class, "hello" + idx);
