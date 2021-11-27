@@ -2,3 +2,9 @@ server:
   tomcat:
     threads:
       max: 1
+
+#spring:
+#  task:
+#    execution:
+#      pool:
+#        core-size: 100

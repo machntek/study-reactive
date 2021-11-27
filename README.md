@@ -93,11 +93,24 @@ OS만 잘 튜닝하면 JAVA로 100만커넥션도 가능.
 Callable은 리턴값이 있고 Runnable은 없다
 Callable은 Exception 던지도록 선언돼있고 Runnable은 없다.
 
-### 이슈
-AsyncRestTemplate이 NIO로 동작 안하는듯하다.
+### 이슈(해결)
+~~AsyncRestTemplate이 NIO로 동작 안하는듯하다.~~
+RemoteService의 서블릿쓰레드가 하나만 만들어져있던걸, 100개로 늘림
 
+### AsyncRestTemplate
+AsyncRestTemplate은 기본적으로 자바의 기본API 와 추가 쓰레드를 만드는것을 이용함
+
+튜닝을 하면 Nonblocking IO를 이용해서 외부API를 호출하는 라이브러리를 쓸 수 있다.(ex. apache의 asyncHttpClient, netty 등)
+
+Netty의 기본 쓰레드 갯수: CPU의 코어 갯수 * 2 (자바에서 코어갯수 가져올 수 있음. 이를 이용해 확인)
+2배로 하는 이유 : 코어당 하나만 쓰는건 비효율적. 적정한 작업들이 실시간으로 병렬적으로 진행되도록 함.(by 토비)
+
+### Non-Blocking IO는 메모리나 자원을 많이쓰는가?
+메모리는 오브젝트를 만들때 사용됨.
 가벼운 오브젝트가 많이 만들어지는건 서버에 전혀 부담이 아님.
 Non-Blokcing IO를 쓴다는건 외부 리소스를 대기하고 있는거지, 리소스를 많이 잡고있는것이 아님.
+
+콜백방식에서는 exception을 던지면, 비동기 작업이라서 어느 stackTrace를 타고 실행되고있는지 모름. 그래서 예외를 전파해봤자 정확히 스프링MVC가 처리하는데가 받으리란 보장이 없음. -> DeferredResult 활용
 
 ### DB에서의 NIO
 DB(JDBC)는 블록킹이 걸린다고 생각을 하고, 쓰레드를 그만큼 할당하거나 자원(CPU 등 리소스)를 그만큼 손해볼거라고 가정하고 소스 짜야함(2017년 기준)
