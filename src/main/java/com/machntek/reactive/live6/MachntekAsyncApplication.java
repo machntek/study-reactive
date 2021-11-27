@@ -19,6 +19,7 @@ import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @EnableAsync
 @SpringBootApplication
@@ -40,6 +41,7 @@ public class MachntekAsyncApplication {
 
             Completion
                     .from(rt.getForEntity(URL1, String.class, "h" + idx))
+                    .andApply(s -> rt.getForEntity(URL2, String.class, s.getBody()))
                     .andAccept(s -> dr.setResult(s.getBody()));
 
 //            ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity(URL1, String.class, "hello" + idx);
@@ -65,17 +67,28 @@ public class MachntekAsyncApplication {
 
     public static class Completion {
         Completion next;
-        Consumer<ResponseEntity<String>> con;
 
+        public Completion() {}
+
+        public Consumer<ResponseEntity<String>> con;
         public Completion(Consumer<ResponseEntity<String>> con) {
             this.con = con;
         }
 
-        public Completion() {}
+        public Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn;
+        public Completion(Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn) {
+            this.fn = fn;
+        }
 
         public void andAccept(Consumer<ResponseEntity<String>> con) {
             Completion c = new Completion(con);
             this.next = c;
+        }
+
+        public Completion andApply(Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn) {
+            Completion c = new Completion(fn);
+            this.next = c;
+            return c;
         }
 
         // 일종의 static factory 메소드
@@ -98,6 +111,14 @@ public class MachntekAsyncApplication {
 
          void run(ResponseEntity<String> value) {
             if (con != null) con.accept(value);
+            else if (fn != null) {
+                ListenableFuture<ResponseEntity<String>> lf = fn.apply(value);
+                lf.addCallback(s -> {
+                    complete(s);
+                }, e -> {
+                    error(e);
+                });
+            }
         }
     }
 
