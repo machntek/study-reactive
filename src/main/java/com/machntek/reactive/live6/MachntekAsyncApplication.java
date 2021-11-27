@@ -42,6 +42,7 @@ public class MachntekAsyncApplication {
             Completion
                     .from(rt.getForEntity(URL1, String.class, "h" + idx))
                     .andApply(s -> rt.getForEntity(URL2, String.class, s.getBody()))
+                    .andError(e -> dr.setErrorResult(e))
                     .andAccept(s -> dr.setResult(s.getBody()));
 
 //            ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity(URL1, String.class, "hello" + idx);
@@ -77,6 +78,23 @@ public class MachntekAsyncApplication {
         }
     }
 
+    public static class ErrorCompletion extends Completion {
+        public Consumer<Throwable> econ;
+        public ErrorCompletion(Consumer<Throwable> econ) {
+            this.econ = econ;
+        }
+
+        @Override
+        void run(ResponseEntity<String> value) {
+            if (next != null) next.run(value);
+        }
+
+        @Override
+        void error(Throwable e) {
+            econ.accept(e);
+        }
+    }
+
     public static class ApplyCompletion extends Completion {
         public Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn;
         public ApplyCompletion(Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn) {
@@ -98,6 +116,12 @@ public class MachntekAsyncApplication {
             this.next = c;
         }
 
+        public Completion andError(Consumer<Throwable> econ) {
+            Completion c = new ErrorCompletion(econ);
+            this.next = c;
+            return c;
+        }
+
         public Completion andApply(Function<ResponseEntity<String>, ListenableFuture<ResponseEntity<String>>> fn) {
             Completion c = new ApplyCompletion(fn);
             this.next = c;
@@ -116,6 +140,7 @@ public class MachntekAsyncApplication {
         }
 
         void error(Throwable e) {
+            if (next != null) next.error(e);
         }
 
         void complete(ResponseEntity<String> s) {
