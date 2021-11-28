@@ -120,3 +120,8 @@ DB(JDBC)는 블록킹이 걸린다고 생각을 하고, 쓰레드를 그만큼 �
 DeferredResult.setErrorResult()에 Exception을 던지면 client한테도 실패처리가 됨(500에러가 던져짐).
 
 DeferredResult.setErrorResult()에 메세지(ex. e.toString())를 넘기면, api호출에 대한 정상적인 결과로 client에게 String이 넘어감(에러긴 하지만 에러메세지가 응답으로 나감)
+
+# 7강
+CompletableFuture.runAsync() 는 Runnable 인터페이스를 파라미터로 받으므로, 비동기 작업에 의해 만들어진 결과값을 다음 체인에서 사용할 수 없음.
+
+CompletableFuture.supplyAsync() 를 써서 결과값을 다음 체인에서 사용 가능

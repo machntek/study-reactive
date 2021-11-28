@@ -23,9 +23,19 @@ public class CFuture {
 
         // 자바7부터는 풀을 아무것도 설정하지 않으면 ForkJoinPool의 commonPool이라는거의 worker가 동작함.
         CompletableFuture
-                .runAsync(() -> log.info("runAsync"))
-                .thenRun(() -> log.info("thenRun"))
-                .thenRun(() -> log.info("thenRun2"));
+                .supplyAsync(() -> {
+                    log.info("runAsync");
+                    return 1;
+                })
+                .thenApply(s -> {
+                    log.info("thenApply {}", s);
+                    return s + 1;
+                })
+                .thenApply(s2 -> {
+                    log.info("thenApply {}", s2);
+                    return s2 * 3;
+                })
+                .thenAccept(s3 -> log.info("thenAccept {}", s3));
         log.info("exit");
 
         ForkJoinPool.commonPool().shutdown();
