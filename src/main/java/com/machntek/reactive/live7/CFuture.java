@@ -27,9 +27,9 @@ public class CFuture {
                     log.info("runAsync");
                     return 1;
                 })
-                .thenApply(s -> {
+                .thenCompose(s -> { // Function의 리턴타입이 CompletableFuture인 경우, thenCompose 사용하면 됨.(thenApply가 Stream.map이면 thenCompose는 Stream.flatMap과 비슷)
                     log.info("thenApply {}", s);
-                    return s + 1;
+                    return CompletableFuture.completedFuture(s + 1); // CompletableFuture를 리턴하는 케이스는 추후 설명.
                 })
                 .thenApply(s2 -> {
                     log.info("thenApply {}", s2);
