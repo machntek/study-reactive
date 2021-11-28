@@ -125,3 +125,10 @@ DeferredResult.setErrorResult()에 메세지(ex. e.toString())를 넘기면, api
 CompletableFuture.runAsync() 는 Runnable 인터페이스를 파라미터로 받으므로, 비동기 작업에 의해 만들어진 결과값을 다음 체인에서 사용할 수 없음.
 
 CompletableFuture.supplyAsync() 를 써서 결과값을 다음 체인에서 사용 가능
+
+## Completable 예외 처리
+예외 처리 방법 2가지 있다.
+
+1. 예외가 일어나는걸 끝까지 계속 넘기는 방식
+2. 예외가 일어나면 적당한 형태의 의미있는 다른값으로 변환해서 다음단계로 넘기는 방식
+

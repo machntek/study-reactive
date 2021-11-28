@@ -25,6 +25,7 @@ public class CFuture {
         CompletableFuture
                 .supplyAsync(() -> {
                     log.info("runAsync");
+                    if (1==1) throw new RuntimeException();
                     return 1;
                 })
                 .thenCompose(s -> { // Function의 리턴타입이 CompletableFuture인 경우, thenCompose 사용하면 됨.(thenApply가 Stream.map이면 thenCompose는 Stream.flatMap과 비슷)
@@ -35,6 +36,7 @@ public class CFuture {
                     log.info("thenApply {}", s2);
                     return s2 * 3;
                 })
+                .exceptionally(e -> -10) // 값을 복구
                 .thenAccept(s3 -> log.info("thenAccept {}", s3));
         log.info("exit");
 
