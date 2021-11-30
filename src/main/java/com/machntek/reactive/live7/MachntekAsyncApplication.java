@@ -45,8 +45,8 @@ public class MachntekAsyncApplication {
                     if (1==1) throw new RuntimeException("ERROR");
                     return toCF(rt.getForEntity(URL2, String.class, s.getBody()));
                 }) // Netty를 실행하는 쪽에서의 쓰레드를 타고 옴.
-                .thenApplyAsync(s2 -> myService.work((s2.getBody()))) // (thenApply 사용시) 이 작업이 수행되는 동안에 얘를 call 한 thread(Netty 실행 쓰레드)를 계속 물고있음.
-                .thenAccept(s3 -> dr.setResult(s3))
+                .thenApplyAsync(s2 -> myService.work((s2.getBody()))) // (thenApply 사용시) 이 작업이 수행되는 동안에 얘를 call 한 thread(Netty 실행 쓰레드)를 계속 물고있음. 그래서 오랫동안 작업을 수행해야 하는 경우 thenApplyAsync로 별개의 쓰레드 사용.
+                .thenAccept(s3 -> dr.setResult(s3)) // 오브젝트에 메소드 하나 호출하는 간단한 작업을 수행하고 끝남. 작업 수행 후 Netty 쓰레드는 바로 리턴되므로 영향 없음. DeferredResult로 http응답이 나가는 작업은 서블릿 쓰레드풀을 이용하여 쓰레드를 할당받아 처리됨.
                 .exceptionally(e -> { dr.setErrorResult(e.getMessage()); return (Void)null; });
 
             return dr;
