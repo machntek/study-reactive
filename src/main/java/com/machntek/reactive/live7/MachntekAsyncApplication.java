@@ -41,7 +41,10 @@ public class MachntekAsyncApplication {
             DeferredResult<String> dr = new DeferredResult<>();
 
             toCF(rt.getForEntity(URL1, String.class, "hello" + idx))
-                .thenCompose(s -> toCF(rt.getForEntity(URL2, String.class, s.getBody()))) // Netty를 실행하는 쪽에서의 쓰레드를 타고 옴.
+                .thenCompose(s -> {
+                    if (1==1) throw new RuntimeException("ERROR");
+                    return toCF(rt.getForEntity(URL2, String.class, s.getBody()));
+                }) // Netty를 실행하는 쪽에서의 쓰레드를 타고 옴.
                 .thenApplyAsync(s2 -> myService.work((s2.getBody()))) // (thenApply 사용시) 이 작업이 수행되는 동안에 얘를 call 한 thread(Netty 실행 쓰레드)를 계속 물고있음.
                 .thenAccept(s3 -> dr.setResult(s3))
                 .exceptionally(e -> { dr.setErrorResult(e.getMessage()); return (Void)null; });
