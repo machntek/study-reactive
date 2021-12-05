@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -42,14 +43,17 @@ public class MachntekAsyncApplication {
             return client.get().uri(URL1, idx).exchange()   // Mono<ClientResponse>
                     .flatMap(c -> c.bodyToMono(String.class))   // Mono<String>
                     .flatMap(res1 -> client.get().uri(URL2, res1).exchange())  // Mono<ClientResponse>
-                    .flatMap(c -> c.bodyToMono(String.class));  // Mono<String>
+                    .flatMap(c -> c.bodyToMono(String.class))  // Mono<String>
+                    .flatMap(res2 -> Mono.fromCompletionStage(myService.work(res2))); // Mono<String>
+                                    // CompletableFuture<String> -> Mono<String>
         }
     }
 
     @Service
     public static class MyService {
-        public String work(String req) {
-            return req + "/asyncwork";
+        @Async
+        public CompletableFuture<String> work(String req) {
+            return CompletableFuture.completedFuture(req + "/asyncwork");
         }
     }
 
