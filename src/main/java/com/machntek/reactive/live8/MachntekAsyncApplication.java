@@ -38,18 +38,8 @@ public class MachntekAsyncApplication {
 
         @GetMapping("/rest")
         public Mono<String> rest(int idx) {
-            // ClientResponse 는 ResponseEntity 와 비슷
-            /**
-             * ClientResponse 는 ResponseEntity 와 비슷함.
-             * 이렇게 정의하는것 만으로는 api 호출이 되지 않음.
-             *
-             * Mono는 Publisher 인터페이스를 구현함.
-             * Publisher는 만들어 놓는다고 해서 자기가 알아서 publishing을 하는게 아님. 비동기 작업을 수행해서 그 결과를 퍼블리싱하는 코드를 정의한 것.
-             * Subscriber가 subscribe하지 않으면 데이터를 쏘지 않음
-             */
-            Mono<ClientResponse> res = client.get().uri(URL1, idx).exchange();  // 이렇게 정의하는것 만으로는 api 호출이 되지 않음.
-
-            return res.flatMap(clientResponse -> clientResponse.bodyToMono(String.class));
+            // 비동기 Non-Blocking 이라는 관점에서 보면 AsyncRestTemplate + DeferredResult 와 똑같이 동작함
+            return client.get().uri(URL1, idx).exchange().flatMap(c -> c.bodyToMono(String.class));
         }
     }
 
