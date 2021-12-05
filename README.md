@@ -141,3 +141,40 @@ CompletableFuture.supplyAsync() 를 써서 결과값을 다음 체인에서 사�
 Executors.newFixedThreadPool()의 특징 : 새로운 비동기작업을 요청할때마다 계속 다음쓰레드 할당함(이전 쓰레드가 종료 됐다고 하더라도). 다 쓴다음에 다시 캐시로 돌아온얘들을 재사용.
 
 쓰레드풀을 직접 구성할때는 하드웨어 특성이나 코어 갯수, 전체적으로 자원을 어떻게 분배하고 할당할 것이냐, 어느정도 자원을 늘이고 줄임에 따라 레이턴시나 throughput이 달라지는것 등을 실험적으로 체크해가며 전략을 만들어야함.
+
+# 8강
+스프링부트2.0부터는 webFlux인 경우 기본으로 netty가 동작함.
+undertow와 netty는 http서버 네트워크 라이브러리임(서블릿컨테이너는 아님).
+
+네트워크 라이브러리 빈 변경 방법(아래)
+```java
+        @Bean
+        NettyReactiveWebServerFactory netty4ClientHttpRequestFactory() {
+            return new NettyReactiveWebServerFactory();
+        }
+```
+
+## Mono
+```java
+        WebClient client = WebClient.create();
+        @GetMapping("/rest")
+        public Mono<String> rest(int idx) {
+            Mono<ClientResponse> res = client.get().uri(URL1, idx).exchange();
+            return Mono.just("Hello");
+        }
+```
+- Mono는 Publisher 인터페이스를 구현함.
+- Publisher는 만들어 놓는다고 해서 자기가 알아서 publishing을 하는게 아님. 
+- 비동기 작업을 수행해서 그 결과를 퍼블리싱하는 코드를 정의한 것.
+- Subscriber가 subscribe하지 않으면 데이터를 쏘지 않음
+- 따라서 위처럼만 작성을 하면 client 의 http 요청 처리는 실행되지 않음
+
+```java
+res.subscribe();
+```
+
+위 처럼 subscribe() 를 해줘야 publisher 코드가 실행 됨
+
+그럼, 스프링 코드에서 언제 subscribe 하는가?
+
+Mono 타입을 리턴하면 스프링 webflux 프레임워크가 리턴타입을 보고 Mono 타입인 경우 정보를 꺼내기 위해 subscribe() 호출함 .
