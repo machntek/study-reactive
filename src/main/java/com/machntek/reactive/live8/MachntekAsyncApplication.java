@@ -39,7 +39,10 @@ public class MachntekAsyncApplication {
         @GetMapping("/rest")
         public Mono<String> rest(int idx) {
             // 비동기 Non-Blocking 이라는 관점에서 보면 AsyncRestTemplate + DeferredResult 와 똑같이 동작함
-            return client.get().uri(URL1, idx).exchange().flatMap(c -> c.bodyToMono(String.class));
+            return client.get().uri(URL1, idx).exchange()   // Mono<ClientResponse>
+                    .flatMap(c -> c.bodyToMono(String.class))   // Mono<String>
+                    .flatMap(res1 -> client.get().uri(URL2, res1).exchange())  // Mono<ClientResponse>
+                    .flatMap(c -> c.bodyToMono(String.class));  // Mono<String>
         }
     }
 
