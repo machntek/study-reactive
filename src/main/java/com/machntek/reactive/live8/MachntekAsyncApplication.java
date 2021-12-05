@@ -1,6 +1,7 @@
 package com.machntek.reactive.live8;
 
 import io.netty.channel.nio.NioEventLoopGroup;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @EnableAsync
 @SpringBootApplication
 public class MachntekAsyncApplication {
@@ -42,10 +44,13 @@ public class MachntekAsyncApplication {
             // 비동기 Non-Blocking 이라는 관점에서 보면 AsyncRestTemplate + DeferredResult 와 똑같이 동작함
             return client.get().uri(URL1, idx).exchange()   // Mono<ClientResponse>
                     .flatMap(c -> c.bodyToMono(String.class))   // Mono<String>
+                    .doOnNext(c -> log.info(c.toString()))
                     .flatMap(res1 -> client.get().uri(URL2, res1).exchange())  // Mono<ClientResponse>
                     .flatMap(c -> c.bodyToMono(String.class))  // Mono<String>
-                    .flatMap(res2 -> Mono.fromCompletionStage(myService.work(res2))); // Mono<String>
+                    .doOnNext(c -> log.info(c.toString()))
+                    .flatMap(res2 -> Mono.fromCompletionStage(myService.work(res2))) // Mono<String>
                                     // CompletableFuture<String> -> Mono<String>
+                    .doOnNext(c -> log.info(c)); // 로그 찍고 리턴해도 됨. 왜냐하면 얘는 publisher 중에 로깅을 하는 작업만 수행하고 앞 publisher 에서 받은걸 아무 손도 대지 않고 다음 publisher 혹은 다음 subscriber 에게 넘김
         }
     }
 
