@@ -212,3 +212,22 @@ HTTP를 지원하는 웹서버 혹은 네트워크 서버라면 서블릿을 직
 어느 웹엔진위에 올라가있는지에 따라서 작성한 애플리케이션 코드가 달라질 일은 없다(서버설정코드 정도만 변경됨).
 
 Netty는 가벼운 서버이고, 서블릿 위에서 스프링이 동작하기 위해 하는 부가작업이 생략되므로, 스프링WebFlux 어플리케이션은 빨리 뜸
+
+### Mono
+
+```java
+    @GetMapping("/")
+    Mono<String> hello() {
+        Mono m = Mono.just("Hello Webflux").log();
+        return m;
+    }
+```
+위에 대한 api호출을 하면 아래와 같이 로그가 찍힌다.
+
+```text
+2021-12-11 10:42:45.928  INFO 971 --- [ctor-http-nio-2] reactor.Mono.Just.1                      : | onSubscribe([Synchronous Fuseable] Operators.ScalarSubscription)
+2021-12-11 10:42:45.929  INFO 971 --- [ctor-http-nio-2] reactor.Mono.Just.1                      : | request(unbounded)
+2021-12-11 10:42:45.929  INFO 971 --- [ctor-http-nio-2] reactor.Mono.Just.1                      : | onNext(Hello Webflux)
+2021-12-11 10:42:45.932  INFO 971 --- [ctor-http-nio-2] reactor.Mono.Just.1                      : | onComplete()
+```
+Mono라는건 기본적으로 데이터를 하나만 갖고있기때문에 onNext한번 하고 나면 그다음에 날리는건 onComplete밖에 없다
