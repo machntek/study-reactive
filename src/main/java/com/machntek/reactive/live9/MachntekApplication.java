@@ -17,6 +17,8 @@ public class MachntekApplication {
 
         // Mono를 만든다는건 Publisher만 만들어서 리턴으로 넘긴다는것. 그러면 스프링 알아서 subscribe를 걸어줌
         Mono m = Mono.fromSupplier(() -> generatedHello()).doOnNext(c -> log.info(c)).log();// static 팩토리 메소드
+
+        m.subscribe();
         log.info("pos2");
         return m;
     }

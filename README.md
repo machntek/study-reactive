@@ -245,3 +245,51 @@ Publisher -> (Publisher) -> (Publisher) -> Subscriber
     Mono.just(myService.findById(1));
 ```
 Mono.just()는 동기적으로 실행이되기 때문에(just는 미리 준비된것임), 이미 다 준비된 publishing할 데이터를 먼저 가져다가 publish 할 준비를 함. 위의 예에선 myService.findById(1) 이 먼저 실행 되고 그 결과값이 just로 들어감.
+
+### Subscribe
+
+```java
+    @GetMapping("/")
+    Mono<String> hello() {
+        log.info("pos1");
+        Mono m = Mono.fromSupplier(() -> generatedHello()).doOnNext(c -> log.info(c)).log();
+        m.subscribe();
+        log.info("pos2");
+        return m;
+    }
+
+    private String generatedHello() {
+        log.info("method generateHello()");
+        return "Hello Mono";
+        }
+```
+위의 예처럼 WebFlux에 리턴하기 전에 subscribe()를 하면 2번 publishing 된다(아래 로그 참고)
+```text
+2021-12-12 21:34:19.009  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : pos1
+2021-12-12 21:34:19.017  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onSubscribe([Fuseable] FluxPeekFuseable.PeekFuseableSubscriber)
+2021-12-12 21:34:19.019  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | request(unbounded)
+2021-12-12 21:34:19.019  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : method generateHello()
+2021-12-12 21:34:19.019  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : Hello Mono
+2021-12-12 21:34:19.019  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onNext(Hello Mono)
+2021-12-12 21:34:19.019  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onComplete()
+2021-12-12 21:34:19.020  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : pos2
+2021-12-12 21:34:19.029  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onSubscribe([Fuseable] FluxPeekFuseable.PeekFuseableSubscriber)
+2021-12-12 21:34:19.029  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | request(unbounded)
+2021-12-12 21:34:19.029  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : method generateHello()
+2021-12-12 21:34:19.029  INFO 2784 --- [ctor-http-nio-2] c.m.reactive.live9.MachntekApplication   : Hello Mono
+2021-12-12 21:34:19.029  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onNext(Hello Mono)
+2021-12-12 21:34:19.031  INFO 2784 --- [ctor-http-nio-2] reactor.Mono.PeekFuseable.1              : | onComplete()
+```
+
+Mono나 Flux같은 Publihser 들은 하나 이상의 Subscriber를 가질 수 있다(publishing하는 소스는 하나인데, subscribe하는건 여러개가 가능).
+
+Publihser가 데이터를 공급하는건 소스타입을 2가지로 나눈다.
+
+1. Cold 타입 :
+    - 데이터가 만들어져서 고정돼있는 경우. 즉, 어느 subscriber가 요청하던지 항상 동일한 (미리 셋팅돼있는)결과가 가는 경우
+    - Subscriber가 새로운 구독을 할 때마다 Publihser가 갖고있는 데이터를 처음부터 다시 만들어서 다시 보내줌(리플레이함).
+    - 여러번 수행 가능
+2. Hot 타입 :
+    - DB에서 데이터를 읽어오거나 미리 준비된 데이터를 가공해서 보내주는 방식이 아닌, 실시간으로 일어나는 외부의 이벤트들(유저 인터페이스에 의한 액션, 외부 시스템에서 실시간으로 날라오는 데이터 등)로 발생한 데이터.
+    - Publihser가 기동을 시작해서 데이터를 100개 publishing 한 시점에서, 새로운 subscribe를 하면 101번째부터 데이터를 받기 시작함.(그 앞의 데이터를 다시 쭈욱 받아오는게 아님)
+    - 즉, 구독하는 그 시점부터 실시간으로 발생하는 데이터만 가져온다.
