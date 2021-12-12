@@ -238,3 +238,10 @@ Mono, Flux 처럼 Publisher로 정의해놓은 것들은 Subscriber가 subscribe
                 오퍼레이터       오퍼레이터
 Publisher -> (Publisher) -> (Publisher) -> Subscriber
 ```
+
+### Mono.just
+
+```java
+    Mono.just(myService.findById(1));
+```
+Mono.just()는 동기적으로 실행이되기 때문에(just는 미리 준비된것임), 이미 다 준비된 publishing할 데이터를 먼저 가져다가 publish 할 준비를 함. 위의 예에선 myService.findById(1) 이 먼저 실행 되고 그 결과값이 just로 들어감.
