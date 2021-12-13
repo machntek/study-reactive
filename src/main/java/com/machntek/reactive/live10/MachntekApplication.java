@@ -31,7 +31,7 @@ public class MachntekApplication {
     @GetMapping(value="/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     Flux<Event> events() {
         return Flux
-                .fromStream(Stream.generate(() -> new Event(System.currentTimeMillis(), "value")))  // Stream.limit()으로 제한 걸 수도 있다.
+                .<Event>generate(sink->sink.next(new Event(System.currentTimeMillis(), "value")))
                 .delayElements(Duration.ofSeconds(1))   // delay 가 background 쓰레드를 만들어서 처리함(이 쓰레드가 10초동안 물고있음). 외부IO처럼 IO를 던져놓고 빠져나갔다가 들어올수 있는게 아니라, delay같은 개념은 그 순간에 blocking이 들어감.
                 .take(10); // 각 element에 map 등의 reactor 라이브러리의 오퍼레이터 작업 걸 수 있다.
     }
