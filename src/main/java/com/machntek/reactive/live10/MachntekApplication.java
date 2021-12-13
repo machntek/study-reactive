@@ -30,13 +30,10 @@ public class MachntekApplication {
 
     @GetMapping(value="/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     Flux<Event> events() {
-        Flux<Event> es = Flux.<Event, Long>generate(()->1L, (id, sink)-> {
-                    sink.next(new Event(id, "value" + id));
-                    return id+1;
-                });
+        Flux<String> es = Flux.generate(sink -> sink.next("value"));
         Flux<Long> interval = Flux.interval(Duration.ofSeconds(1));  // interval은 일정한 주기로 0부터 시작하는 값을 계속 던져줌.
 
-        return Flux.zip(es, interval).map(tu->tu.getT1()).take(10); // 모든 Flux 는 zip으로 다 묶을수 있다(zipping)
+        return Flux.zip(es, interval).map(tu->new Event(tu.getT2()+1, tu.getT1())).take(10); // 모든 Flux 는 zip으로 다 묶을수 있다(zipping)
     }
 
     public static void main(String[] args) {
