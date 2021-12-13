@@ -30,14 +30,13 @@ public class MachntekApplication {
 
     @GetMapping(value="/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     Flux<Event> events() {
-        return Flux
-//                .range(1, 10)
-                .<Event, Long>generate(()->1L, (id, sink)-> {
+        Flux<Event> es = Flux.<Event, Long>generate(()->1L, (id, sink)-> {
                     sink.next(new Event(id, "value" + id));
                     return id+1;
-                })
-                .delayElements(Duration.ofSeconds(1))   // delay 가 background 쓰레드를 만들어서 처리함(이 쓰레드가 10초동안 물고있음). 외부IO처럼 IO를 던져놓고 빠져나갔다가 들어올수 있는게 아니라, delay같은 개념은 그 순간에 blocking이 들어감.
-                .take(10); // 각 element에 map 등의 reactor 라이브러리의 오퍼레이터 작업 걸 수 있다.
+                });
+        Flux<Long> interval = Flux.interval(Duration.ofSeconds(1));  // interval은 일정한 주기로 0부터 시작하는 값을 계속 던져줌.
+
+        return Flux.zip(es, interval).map(tu->tu.getT1()).take(10); // 모든 Flux 는 zip으로 다 묶을수 있다(zipping)
     }
 
     public static void main(String[] args) {
