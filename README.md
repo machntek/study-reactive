@@ -295,8 +295,31 @@ Publihser가 데이터를 공급하는건 소스타입을 2가지로 나눈다.
     - 즉, 구독하는 그 시점부터 실시간으로 발생하는 데이터만 가져온다.
 
 # 10강
-### Mono<List<Object>> 와 Flux<Object> 의 차이
-- Mono<List<Object>> 는 컬렉션타입 자체(ex. List)를 다룸. 하나의 element만 가짐(여기서는 List<Object>).
-- Flux<Object> 는 각 Object에 대해 reactor 오퍼레이터를 걸 수 있음
+1. Mono<List> 와 Flux 의 차이 1
+    - Mono<List> 는 컬렉션타입 자체(ex. List)를 다룸. 하나의 element만 가짐(여기서는 List)
+    - Flux 는 각 Object에 대해 reactor 오퍼레이터를 걸 수 있음.
+  
+2. Mono<List>와 Flux 의 차이 2
+   - http 스트림을 지원하려면(데이터를 청크단위로 나눠서 보내는 방법을 사용하려면) Flux 를 이용하면 편리함  
+   - 굳이 스트림으로 만든다는것은 약간의 딜레이들 두고 데이터들이 올 수 있다는것(이벤트가 발생할때만 하나씩 온다거나 등의 구조). 데이터단위로 쪼개서 들어옴
+   - Flux안의 요소 하나하나를 스트림 단위로 쪼개서 보낼 수 있음.(아래 예시)
 
+```java
+    @GetMapping(value="/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    Flux<Event> events() {
+        List<Event> list = Arrays.asList(new Event(1L, "event1"), new Event(2L, "event2"));
+        return Flux.fromIterable(list);
+    }
+```
+결과(Flux를 이용해 스트림방식으로 리턴)
+```
+> curl localhost:8080/events
+data:{"id":1,"value":"event1"}
 
+data:{"id":2,"value":"event2"}
+```
+참고(Mono를 이용해 List 리턴)
+```
+> curl localhost:8080/event/1
+[{"id":1,"value":"event1"},{"id":2,"value":"event2"}]
+```
